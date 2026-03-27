@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BÜnker-9</title>
+    <link rel="icon" type="image/x-icon" href="img/skull.ico">
+
+    <style>
+        @font-face { 
+            font-family: 'Warface'; 
+            src: url('img/Warface.ttf') format('truetype'); 
+            font-display: swap;
+        }
+        @font-face { 
+            font-family: 'Wolfenstein'; 
+            src: url('img/wolfenstein.ttf') format('truetype'); 
+            font-display: swap;
+        }
+
+        :root {
+            --yellow: #ffcc00; 
+            --black: #000000; 
+            --white: #ffffff; 
+            --danger-stripe: repeating-linear-gradient(45deg, #ffcc00, #ffcc00 10px, #000 10px, #000 20px);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { 
+            background: var(--black); 
+            color: var(--white); 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            font-family: sans-serif; 
+        }
+
+        header {
+            background: #000;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 5%;
+            position: sticky; top: 0; z-index: 1000;
+            border-bottom: 5px solid var(--yellow);
+            height: 110px;
+        }
+
+        header::before { 
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 5px; 
+            background: var(--danger-stripe); 
+        }
+
+        .left-side { display: flex; align-items: center; height: 100%; }
+        .header-pic { height: 70px; width: auto; object-fit: contain; }
+
+        .logo-area { display: flex; flex-direction: column; margin-left: 15px; }
+        .logo { 
+            font-family: 'Wolfenstein', serif !important; 
+            color: #ffffff !important; 
+            font-size: clamp(1.8rem, 5vw, 3.5rem); 
+            text-transform: uppercase; 
+            line-height: 1;
+            letter-spacing: 2px;
+        }
+
+        #lang-display-btn { 
+            font-family: 'Warface', sans-serif !important; 
+            background: none; border: 2px solid var(--yellow); 
+            color: var(--yellow); padding: 8px 15px; cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .video-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 25px; 
+            padding: 40px 5%; 
+        }
+        
+        .video-banner {
+            aspect-ratio: 16/9; 
+            background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('img/header-photo.jpg');
+            background-size: cover; border: 1px solid #333; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; 
+            opacity: 0; transform: translateY(20px);
+            text-align: center;
+            padding: 10px;
+        }
+        .video-banner.show { opacity: 1; transform: translateY(0); }
+        .video-banner:hover { border-color: var(--yellow); transform: scale(1.02); }
+        
+        .banner-text { position: relative; z-index: 2; color: var(--white); font-family: 'Warface', sans-serif; font-size: 2.2rem; margin-bottom: 5px; }
+        .banner-subtext { position: relative; z-index: 2; color: var(--yellow); font-size: 1rem; font-family: 'Warface'; text-transform: uppercase; margin-bottom: 8px; }
+        
+        .banner-warn {
+            position: relative; z-index: 2;
+            color: #ff4444; font-family: 'Warface'; font-size: 0.65rem;
+            text-transform: uppercase; line-height: 1.2;
+            max-width: 90%;
+        }
+
+        @media (max-width: 600px) {
+            header { height: 80px; padding: 0 15px; }
+            .header-pic { height: 50px; }
+            .video-grid { grid-template-columns: 1fr; padding: 20px 5%; }
+        }
+
+        .video-modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.98); display: none; justify-content: center; 
+            align-items: center; z-index: 3000; padding: 10px; 
+        }
+        .video-modal.active { display: flex; }
+        .video-content { border: 2px solid var(--yellow); background: #000; position: relative; display: flex; flex-direction: column; width: 100%; }
+        .video-content.horizontal { max-width: 900px; height: auto; }
+        .video-content.vertical { height: 80vh; width: auto; max-width: 95vw; }
+        .video-content video { height: 100%; width: 100%; display: block; }
+        .close-video { position: absolute; top: -40px; right: 0; background: var(--yellow); color: #000; font-family: 'Warface'; cursor: pointer; font-size: 0.8rem; padding: 5px 12px; z-index: 3100; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); display: flex; justify-content: center; align-items: center; z-index: 9999; visibility: hidden; opacity: 0; transition: 0.3s; padding: 20px; }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+        
+        .age-box, .lang-modal { padding: 30px; border: 4px solid var(--yellow); text-align: center; background: #050505; width: 100%; max-width: 500px; }
+        .age-skull { width: 100px; margin-bottom: 15px; }
+        .age-box h1 { font-family: 'Warface'; font-size: 1.6rem; color: white; margin-bottom: 20px; }
+        
+        .age-warn-box { color: #ff4444; font-family: 'Warface'; font-size: 0.8rem; margin-top: 20px; text-transform: uppercase; border-top: 1px solid #333; padding-top: 15px; }
+        
+        .age-buttons { display: flex; gap: 15px; justify-content: center; }
+        .age-btn, .modal-lang-btn { font-family: 'Warface' !important; padding: 12px 25px; font-size: 1.1rem; cursor: pointer; border: none; }
+        .btn-yes { background: var(--yellow); color: black; }
+        .btn-no { background: #222; color: white; }
+        .modal-lang-btn { width: 100%; margin-bottom: 10px; background: #111; color: white; border: 1px solid #333; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="videoModal" class="video-modal" onclick="closeVideo()">
+        <div class="video-content" id="videoContent" onclick="event.stopPropagation()">
+            <div class="close-video" onclick="closeVideo()">[ CLOSE ]</div>
+            <video id="mainPlayer" controls playsinline></video>
+        </div>
+    </div>
+
+    <div id="langModal" class="modal-overlay" onclick="if(event.target == this) toggleModal()">
+        <div class="lang-modal">
+            <h2 style="font-family: 'Warface'; color: white; margin-bottom: 20px;">LANGUAGE</h2>
+            <button class="modal-lang-btn" onclick="changeLanguage('en')">ENGLISH</button>
+            <button class="modal-lang-btn" onclick="changeLanguage('ru')">РУССКИЙ</button>
+            <button class="modal-lang-btn" onclick="changeLanguage('ua')">УКРАЇНСЬКА</button>
+        </div>
+    </div>
+
+    <div id="age-verification" class="modal-overlay active">
+        <div class="age-box">
+            <img src="img/skull.png" alt="Skull" class="age-skull">
+            <h1 id="age-question">ARE YOU 18+?</h1>
+            <div class="age-buttons">
+                <button class="age-btn btn-yes" onclick="verifyAge()">YES</button>
+                <button class="age-btn btn-no" onclick="window.location.href='https://google.com'">NO</button>
+            </div>
+            <div class="age-warn-box" id="age-warning-text">
+                Watch at your own risk
+            </div>
+        </div>
+    </div>
+
+    <div id="site-content" class="hidden">
+        <header>
+            <div class="left-side">
+                <img src="img/skull.png" alt="Logo" class="header-pic">
+                <div class="logo-area">
+                    <div class="logo">BÜnker-9</div>
+                </div>
+            </div>
+            <button id="lang-display-btn" onclick="toggleModal()">LANG</button>
+        </header>
+        <main class="video-grid" id="main-grid"></main>
+    </div>
+
+    <script>
+        const translations = {
+            en: { btn: "LANG", age: "ARE YOU 18+?", warn: "Watch at your own risk", subtext: "massacre!" },
+            ru: { btn: "ЯЗЫК", age: "ВАМ ЕСТЬ 18?", warn: "Смотрите на свой страх и риск", subtext: "резня!" },
+            ua: { btn: "МОВА", age: "ВАМ Є 18?", warn: "Дивіться на власний ризик", subtext: "різанина!" }
+        };
+
+        function renderBanners(lang) {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= 9; i++) {
+                const banner = document.createElement('div');
+                banner.className = 'video-banner';
+                banner.onclick = () => openVideo(`img/${i}.mp4`);
+                banner.innerHTML = `
+                    <div class="banner-text">18+</div>
+                    <div class="banner-subtext">${translations[lang].subtext}</div>
+                    <div class="banner-warn">${translations[lang].warn}</div>
+                `;
+                grid.appendChild(banner);
+            }
+            showBanners();
+        }
+
+        function openVideo(src) {
+            const modal = document.getElementById('videoModal');
+            const content = document.getElementById('videoContent');
+            const player = document.getElementById('mainPlayer');
+            player.src = src;
+            content.classList.remove('vertical', 'horizontal');
+            player.onloadedmetadata = function() {
+                content.classList.add(this.videoHeight > this.videoWidth ? 'vertical' : 'horizontal');
+            };
+            modal.classList.add('active');
+            player.play();
+        }
+
+        function closeVideo() {
+            document.getElementById('videoModal').classList.remove('active');
+            const player = document.getElementById('mainPlayer');
+            player.pause(); player.src = "";
+        }
+
+        function toggleModal() { document.getElementById('langModal').classList.toggle('active'); }
+
+        function verifyAge() {
+            localStorage.setItem('verified_bunker', 'true');
+            document.getElementById('age-verification').classList.remove('active');
+            document.getElementById('site-content').classList.remove('hidden');
+            renderBanners(localStorage.getItem('lang_bunker') || 'en');
+        }
+
+        function applyLanguage(lang) {
+            const data = translations[lang];
+            document.getElementById('lang-display-btn').innerText = data.btn;
+            document.getElementById('age-question').innerText = data.age;
+            document.getElementById('age-warning-text').innerText = data.warn;
+            if (localStorage.getItem('verified_bunker') === 'true') renderBanners(lang);
+        }
+
+        function changeLanguage(lang) {
+            localStorage.setItem('lang_bunker', lang);
+            applyLanguage(lang);
+            toggleModal();
+        }
+
+        function showBanners() {
+            const banners = document.querySelectorAll('.video-banner');
+            banners.forEach((b, i) => { setTimeout(() => b.classList.add('show'), i * 50); });
+        }
+
+        window.onload = () => {
+            const savedLang = localStorage.getItem('lang_bunker') || 'en';
+            applyLanguage(savedLang);
+            if (localStorage.getItem('verified_bunker') === 'true') {
+                document.getElementById('age-verification').classList.remove('active');
+                document.getElementById('site-content').classList.remove('hidden');
+                renderBanners(savedLang);
+            }
+        };
+    </script>
+</body>
+</html>
